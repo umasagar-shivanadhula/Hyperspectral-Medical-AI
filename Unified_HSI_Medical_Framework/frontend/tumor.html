@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tumor Detection — HSI MED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
+</head>
+<body class="analysis-page">
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-icon">⬡</div>
+    <span>HSI<span class="accent">MED</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="perfusion.html">Perfusion Detection</a></li>
+    <li><a href="tumor.html" class="active">Tumor Detection</a></li>
+    <li><a href="index.html#docs">Documentation</a></li>
+  </ul>
+</nav>
+
+<div class="page-hero tumor-hero">
+  <div class="hero-bg">
+    <div class="orb orb-1" style="background:radial-gradient(circle, rgba(0,150,255,0.3) 0%, transparent 70%)"></div>
+    <div class="orb orb-2" style="background:radial-gradient(circle, rgba(255,0,100,0.25) 0%, transparent 70%)"></div>
+  </div>
+  <div class="page-hero-content">
+    <div class="page-badge">HistologyHSI-GB DATASET · 13 PATIENTS · 16 BANDS</div>
+    <h1>Brain Tumor Detection</h1>
+    <p>Hyperspectral Analysis of Glioblastoma in Histological Tissue Sections</p>
+  </div>
+</div>
+
+<div class="dashboard-layout">
+
+  <!-- Upload Panel -->
+  <div class="panel upload-panel">
+    <div class="panel-header">
+      <div class="panel-icon">◉</div>
+      <h2>Upload Hyperspectral Tissue Image</h2>
+      <div class="panel-badge tumor-badge">HistologyHSI-GB</div>
+    </div>
+    <div class="upload-zone" id="tumor-drop-zone">
+      <div class="upload-icon">⊕</div>
+      <p>Drop hyperspectral histology file here or click to browse</p>
+      <p class="upload-hint">Supports: .hdr / .npy / .npz / .h5 (ROI_T or ROI_NT)</p>
+      <input type="file" id="tumor-file-input" accept=".hdr,.npy,.npz,.h5,.bin" hidden>
+    </div>
+    <div class="upload-controls">
+      <button class="btn btn-upload tumor-btn" id="tumor-browse-btn">
+        <span>◉</span> Choose File
+      </button>
+      <span class="file-name-display" id="tumor-file-name">No file selected</span>
+    </div>
+    <button class="btn btn-run tumor-run" id="tumor-run-btn" disabled>
+      <span class="btn-spinner hidden" id="tumor-spinner">⟳</span>
+      <span id="tumor-btn-text">Detect Tumor</span>
+    </button>
+    <div class="demo-link">
+      <button class="btn btn-demo" id="tumor-demo-btn">▶ Run Demo with Synthetic Data</button>
+    </div>
+  </div>
+
+  <!-- AI Summary -->
+  <div class="panel summary-panel hidden" id="tumor-summary-panel">
+    <div class="panel-header">
+      <div class="panel-icon">◉</div>
+      <h2>AI Summary: <span class="summary-result tumor-result" id="tumor-summary-label">—</span>
+        <span class="summary-conf" id="tumor-summary-conf"></span>
+      </h2>
+    </div>
+    <p class="summary-text" id="tumor-summary-text">Awaiting analysis...</p>
+    <div class="summary-meta">
+      <div class="meta-item"><span class="meta-key">Model</span><span class="meta-val">RF + SVM Softmax Fusion</span></div>
+      <div class="meta-item"><span class="meta-key">Bands</span><span class="meta-val">16 Spectral Channels</span></div>
+      <div class="meta-item"><span class="meta-key">Task</span><span class="meta-val">Glioblastoma Detection</span></div>
+    </div>
+  </div>
+
+  <!-- Visualization Row -->
+  <div class="viz-row hidden" id="tumor-viz-row">
+
+    <!-- Tumor Probability Map -->
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Tumor Probability Map</div>
+      <div class="heatmap-container" id="tumor-heatmap"></div>
+      <div class="colorbar-row">
+        <span class="cb-label blue">Normal Tissue</span>
+        <div class="colorbar tumor-bar"></div>
+        <span class="cb-label red">Tumor Tissue</span>
+      </div>
+    </div>
+
+    <!-- Spectral Signature -->
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Spectral Signature</div>
+      <canvas id="tumor-spectral-chart" height="220"></canvas>
+    </div>
+
+    <!-- Fusion Predictions Summary -->
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Fusion Predictions</div>
+      <div class="fusion-summary" id="tumor-fusion-summary"></div>
+      <div class="final-result-badge" id="tumor-final-badge"></div>
+    </div>
+
+  </div>
+
+  <!-- Classifiers + Probabilities Row -->
+  <div class="classifiers-row hidden" id="tumor-classifiers-row">
+
+    <!-- RF Predictions -->
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spectral Predictions (RF)</div>
+      <div class="clf-entry"><span class="clf-dot dot-blue"></span><span class="clf-name">Random Forest:</span><span class="clf-val" id="tumor-rf-label">—</span></div>
+      <div class="clf-entry"><span class="clf-dot dot-cyan"></span><span class="clf-name">Confidence:</span><span class="clf-val" id="tumor-rf-conf-val">—</span></div>
+      <canvas id="tumor-rf-chart" height="120"></canvas>
+    </div>
+
+    <!-- SVM Predictions -->
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spatial Predictions (SVM)</div>
+      <div class="clf-entry"><span class="clf-dot dot-blue"></span><span class="clf-name">SVM:</span><span class="clf-val" id="tumor-svm-label">—</span></div>
+      <div class="clf-entry"><span class="clf-dot dot-orange"></span><span class="clf-name">Confidence:</span><span class="clf-val" id="tumor-svm-conf-val">—</span></div>
+      <canvas id="tumor-svm-chart" height="120"></canvas>
+    </div>
+
+    <!-- Fusion Probabilities -->
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Fusion Probabilities</div>
+      <div class="prob-row">
+        <span class="prob-dot dot-blue"></span>
+        <span class="prob-label">Non-Tumor Tissue:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="tumor-prob-normal-bar"></div></span>
+        <span class="prob-pct" id="tumor-prob-normal">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-dot dot-red"></span>
+        <span class="prob-label">Glioblastoma Tumor:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="tumor-prob-tumor-bar"></div></span>
+        <span class="prob-pct" id="tumor-prob-tumor">—</span>
+      </div>
+      <div class="final-label-row" id="tumor-final-row"></div>
+    </div>
+
+  </div>
+
+  <!-- Model Evaluation (from last training) -->
+  <div class="panel evaluation-panel" id="tumor-eval-panel">
+    <div class="panel-header">
+      <div class="panel-icon">◉</div>
+      <h2>Model Evaluation</h2>
+      <div class="panel-badge">Last Training Run</div>
+    </div>
+    <div id="tumor-eval-content">
+      <p class="eval-loading" id="tumor-eval-loading">Loading evaluation metrics…</p>
+      <div class="eval-metrics hidden" id="tumor-eval-metrics">
+        <div class="eval-stats">
+          <span class="eval-stat"><strong>Fusion Accuracy:</strong> <span id="tumor-eval-accuracy">—</span></span>
+          <span class="eval-stat"><strong>F1 Score:</strong> <span id="tumor-eval-f1">—</span></span>
+        </div>
+        <div class="panel-header-sm">Confusion Matrix (Fusion)</div>
+        <div id="tumor-confusion-matrix" class="confusion-matrix-container"></div>
+      </div>
+      <p class="eval-none hidden" id="tumor-eval-none">No evaluation data. Run <code>python ml_pipeline/training/train_tumor.py</code> first.</p>
+    </div>
+  </div>
+
+  <!-- Error Panel -->
+  <div class="panel error-panel hidden" id="tumor-error-panel">
+    <div class="error-icon">⚠</div>
+    <p id="tumor-error-text">An error occurred.</p>
+    <button class="btn btn-demo" onclick="resetTumor()">Reset</button>
+  </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/tumor.js"></script>
+</body>
+</html>
