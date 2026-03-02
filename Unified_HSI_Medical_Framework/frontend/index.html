@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unified HSI Medical Analysis Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="home-page">
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-icon">⬡</div>
+    <span>HSI<span class="accent">MED</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="perfusion.html">Perfusion Detection</a></li>
+    <li><a href="tumor.html">Tumor Detection</a></li>
+    <li><a href="#docs">Documentation</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-bg">
+    <div class="grid-overlay"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <canvas id="particle-canvas"></canvas>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">SPECTRAL · SPATIAL · AI FRAMEWORK</div>
+    <h1 class="hero-title">Unified Hyperspectral<br><span class="gradient-text">Medical Analysis</span><br>Platform</h1>
+    <p class="hero-sub">Spectral–Spatial AI Framework for Medical Imaging<br>Powered by Multi-Classifier Ensemble Learning</p>
+    <div class="hero-actions">
+      <a href="perfusion.html" class="btn btn-primary">
+        <span class="btn-icon">◈</span> Start Perfusion Analysis
+      </a>
+      <a href="tumor.html" class="btn btn-secondary">
+        <span class="btn-icon">◉</span> Start Tumor Detection
+      </a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-val">16</span><span class="stat-lbl">Spectral Bands</span></div>
+      <div class="stat-sep">|</div>
+      <div class="stat"><span class="stat-val">2</span><span class="stat-lbl">Clinical Tasks</span></div>
+      <div class="stat-sep">|</div>
+      <div class="stat"><span class="stat-val">RF+SVM</span><span class="stat-lbl">Fusion Model</span></div>
+      <div class="stat-sep">|</div>
+      <div class="stat"><span class="stat-val">∞</span><span class="stat-lbl">Spectral Insight</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="section-header">
+    <div class="section-tag">CORE CAPABILITIES</div>
+    <h2>Framework Architecture</h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card" data-delay="0">
+      <div class="feature-icon-wrap">
+        <div class="feature-icon">◈</div>
+      </div>
+      <h3>Hyperspectral Imaging</h3>
+      <p>Processing 16-band hyperspectral cubes with radiometric correction using dark/white reference normalization for clinical-grade accuracy.</p>
+      <ul class="feature-list">
+        <li>Dark/White Reference Correction</li>
+        <li>Patch-based Classification (32×32)</li>
+        <li>PCA Dimensionality Reduction</li>
+      </ul>
+    </div>
+    <div class="feature-card" data-delay="100">
+      <div class="feature-icon-wrap">
+        <div class="feature-icon">◇</div>
+      </div>
+      <h3>Spectral–Spatial Learning</h3>
+      <p>Dual-branch feature extraction combining spectral signatures with GLCM spatial texture features for comprehensive tissue characterization.</p>
+      <ul class="feature-list">
+        <li>Mean/Variance Spectral Features</li>
+        <li>GLCM Texture Analysis</li>
+        <li>Spectral Index Computation</li>
+      </ul>
+    </div>
+    <div class="feature-card" data-delay="200">
+      <div class="feature-icon-wrap">
+        <div class="feature-icon">⊕</div>
+      </div>
+      <h3>Fusion Classifiers</h3>
+      <p>Softmax probability fusion of Random Forest and SVM predictions for robust multi-class medical image classification with confidence scoring.</p>
+      <ul class="feature-list">
+        <li>Random Forest (Spectral Branch)</li>
+        <li>SVM (Spatial Branch)</li>
+        <li>Softmax Probability Fusion</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="apps-section">
+  <div class="section-header">
+    <div class="section-tag">CLINICAL APPLICATIONS</div>
+    <h2>Our Applications</h2>
+  </div>
+  <div class="apps-grid">
+    <div class="app-card perfusion-card">
+      <div class="app-overlay"></div>
+      <div class="app-content">
+        <div class="app-badge">DATASET: SPECTRALPACA</div>
+        <h3>Tissue Perfusion<br>Abnormality Detection</h3>
+        <p>Identifies reduced blood flow and oxygenation patterns across 10 subjects with ~204,510 hyperspectral frames across normal, reduced, and abnormal perfusion states.</p>
+        <div class="app-classes">
+          <span class="cls cls-green">Normal</span>
+          <span class="cls cls-orange">Reduced</span>
+          <span class="cls cls-red">Abnormal</span>
+        </div>
+        <a href="perfusion.html" class="btn btn-app">Analyze Perfusion →</a>
+      </div>
+    </div>
+    <div class="app-card tumor-card">
+      <div class="app-overlay"></div>
+      <div class="app-content">
+        <div class="app-badge">DATASET: HistologyHSI-GB</div>
+        <h3>Glioblastoma Brain<br>Tumor Detection</h3>
+        <p>Detects tumor tissue in hyperspectral histology images from 13 patients. Distinguishes ROI_T (tumor) from ROI_NT (non-tumor) with spatial probability mapping.</p>
+        <div class="app-classes">
+          <span class="cls cls-blue">Non-Tumor</span>
+          <span class="cls cls-red">Glioblastoma</span>
+        </div>
+        <a href="tumor.html" class="btn btn-app">Detect Tumor →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="pipeline-section" id="docs">
+  <div class="section-header">
+    <div class="section-tag">METHODOLOGY</div>
+    <h2>ML Pipeline Overview</h2>
+  </div>
+  <div class="pipeline-flow">
+    <div class="pipe-step">
+      <div class="pipe-icon">①</div>
+      <div class="pipe-label">Hyperspectral Data Ingestion</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">②</div>
+      <div class="pipe-label">Radiometric Preprocessing</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">③</div>
+      <div class="pipe-label">Patch Extraction 32×32</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">④</div>
+      <div class="pipe-label">Feature Extraction</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">⑤</div>
+      <div class="pipe-label">PCA Reduction</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step">
+      <div class="pipe-icon">⑥</div>
+      <div class="pipe-label">RF + SVM Fusion</div>
+    </div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step pipe-step-final">
+      <div class="pipe-icon">⑦</div>
+      <div class="pipe-label">Clinical Prediction</div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">HSI<span class="accent">MED</span> Framework</div>
+    <p>Unified Spectral–Spatial Multi-Classifier Framework for Hyperspectral Medical Image Analysis</p>
+    <p class="footer-tech">Python · FastAPI · scikit-learn · NumPy · Spectral Python</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
