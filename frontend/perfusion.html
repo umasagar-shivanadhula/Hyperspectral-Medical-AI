@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfusion Analysis — HSI MED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
+</head>
+<body class="analysis-page">
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="nav-icon">⬡</div>
+    <span>HSI<span class="accent">MED</span></span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="perfusion.html" class="active">Perfusion Detection</a></li>
+    <li><a href="tumor.html">Tumor Detection</a></li>
+    <li><a href="index.html#docs">Documentation</a></li>
+  </ul>
+</nav>
+
+<div class="page-hero perfusion-hero">
+  <div class="hero-bg">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+  <div class="page-hero-content">
+    <div class="page-badge">SPECTRALPACA DATASET · 16 SPECTRAL BANDS</div>
+    <h1>Tissue Perfusion Analysis</h1>
+    <p>Hyperspectral Assessment of Tissue Blood Flow & Oxygenation Patterns</p>
+  </div>
+</div>
+
+<div class="dashboard-layout">
+
+  <!-- Upload Panel -->
+  <div class="panel upload-panel">
+    <div class="panel-header">
+      <div class="panel-icon">⬡</div>
+      <h2>Upload Hyperspectral Data</h2>
+      <div class="panel-badge">SPECTRALPACA</div>
+    </div>
+    <div class="upload-zone" id="perfusion-drop-zone">
+      <div class="upload-icon">⊕</div>
+      <p>Drop hyperspectral file here or click to browse</p>
+      <p class="upload-hint">Supports: .hdr / .npy / .npz / .h5 (16-band HSI cubes)</p>
+      <input type="file" id="perfusion-file-input" accept=".hdr,.npy,.npz,.h5,.bin" hidden>
+    </div>
+    <div class="upload-controls">
+      <button class="btn btn-upload" id="perfusion-browse-btn">
+        <span>◈</span> Choose File
+      </button>
+      <span class="file-name-display" id="perfusion-file-name">No file selected</span>
+    </div>
+    <button class="btn btn-run" id="perfusion-run-btn" disabled>
+      <span class="btn-spinner hidden" id="perfusion-spinner">⟳</span>
+      <span id="perfusion-btn-text">Run Perfusion Analysis</span>
+    </button>
+    <div class="demo-link">
+      <button class="btn btn-demo" id="perfusion-demo-btn">▶ Run Demo with Synthetic Data</button>
+    </div>
+  </div>
+
+  <!-- AI Summary -->
+  <div class="panel summary-panel hidden" id="perfusion-summary-panel">
+    <div class="panel-header">
+      <div class="panel-icon">◈</div>
+      <h2>AI Summary: <span class="summary-result" id="perfusion-summary-label">—</span>
+        <span class="summary-conf" id="perfusion-summary-conf"></span>
+      </h2>
+    </div>
+    <p class="summary-text" id="perfusion-summary-text">Awaiting analysis...</p>
+    <div class="summary-meta">
+      <div class="meta-item"><span class="meta-key">Model</span><span class="meta-val">RF + SVM Softmax Fusion</span></div>
+      <div class="meta-item"><span class="meta-key">Bands</span><span class="meta-val">16 Spectral Channels</span></div>
+      <div class="meta-item"><span class="meta-key">Task</span><span class="meta-val">Perfusion Classification</span></div>
+    </div>
+  </div>
+
+  <!-- Visualization Row -->
+  <div class="viz-row hidden" id="perfusion-viz-row">
+
+    <!-- Perfusion Map -->
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Perfusion Map</div>
+      <div class="heatmap-container" id="perfusion-heatmap"></div>
+      <div class="colorbar-row">
+        <span class="cb-label green">Normal</span>
+        <div class="colorbar perfusion-bar"></div>
+        <span class="cb-label red">Abnormal</span>
+      </div>
+    </div>
+
+    <!-- Spectral Signature -->
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Spectral Signature</div>
+      <canvas id="perfusion-spectral-chart" height="220"></canvas>
+    </div>
+
+    <!-- Fusion Predictions Summary -->
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Fusion Predictions</div>
+      <div class="fusion-summary" id="perfusion-fusion-summary"></div>
+      <div class="final-result-badge" id="perfusion-final-badge"></div>
+    </div>
+
+  </div>
+
+  <!-- Classifiers + Probabilities Row -->
+  <div class="classifiers-row hidden" id="perfusion-classifiers-row">
+
+    <!-- Spectral Predictions (RF) -->
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spectral Predictions</div>
+      <div class="clf-entry"><span class="clf-dot dot-blue"></span><span class="clf-name">Random Forest:</span><span class="clf-val" id="perf-rf-label">—</span><span class="clf-conf" id="perf-rf-conf"></span></div>
+      <div class="clf-entry"><span class="clf-dot dot-cyan"></span><span class="clf-name">Confidence:</span><span class="clf-val" id="perf-rf-conf-val">—</span></div>
+      <canvas id="perf-rf-chart" height="120"></canvas>
+    </div>
+
+    <!-- Spatial Predictions (SVM) -->
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spatial Predictions</div>
+      <div class="clf-entry"><span class="clf-dot dot-blue"></span><span class="clf-name">SVM:</span><span class="clf-val" id="perf-svm-label">—</span></div>
+      <div class="clf-entry"><span class="clf-dot dot-orange"></span><span class="clf-name">Confidence:</span><span class="clf-val" id="perf-svm-conf-val">—</span></div>
+      <canvas id="perf-svm-chart" height="120"></canvas>
+    </div>
+
+    <!-- Fusion Probabilities -->
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Fusion Probabilities</div>
+      <div class="prob-row">
+        <span class="prob-dot dot-green"></span>
+        <span class="prob-label">Normal Perfusion:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="perf-prob-normal-bar"></div></span>
+        <span class="prob-pct" id="perf-prob-normal">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-dot dot-orange"></span>
+        <span class="prob-label">Reduced Perfusion:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="perf-prob-reduced-bar"></div></span>
+        <span class="prob-pct" id="perf-prob-reduced">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-dot dot-red"></span>
+        <span class="prob-label">Abnormal Perfusion:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="perf-prob-abnormal-bar"></div></span>
+        <span class="prob-pct" id="perf-prob-abnormal">—</span>
+      </div>
+      <div class="final-label-row" id="perf-final-row"></div>
+    </div>
+
+  </div>
+
+  <!-- Model Evaluation (from last training) -->
+  <div class="panel evaluation-panel" id="perfusion-eval-panel">
+    <div class="panel-header">
+      <div class="panel-icon">◈</div>
+      <h2>Model Evaluation</h2>
+      <div class="panel-badge">Last Training Run</div>
+    </div>
+    <div id="perfusion-eval-content">
+      <p class="eval-loading" id="perfusion-eval-loading">Loading evaluation metrics…</p>
+      <div class="eval-metrics hidden" id="perfusion-eval-metrics">
+        <div class="eval-stats">
+          <span class="eval-stat"><strong>Fusion Accuracy:</strong> <span id="perf-eval-accuracy">—</span></span>
+          <span class="eval-stat"><strong>F1 Score:</strong> <span id="perf-eval-f1">—</span></span>
+        </div>
+        <div class="panel-header-sm">Confusion Matrix (Fusion)</div>
+        <div id="perfusion-confusion-matrix" class="confusion-matrix-container"></div>
+      </div>
+      <p class="eval-none hidden" id="perfusion-eval-none">No evaluation data. Run <code>python ml_pipeline/training/train_perfusion.py</code> first.</p>
+    </div>
+  </div>
+
+  <!-- Error Panel -->
+  <div class="panel error-panel hidden" id="perfusion-error-panel">
+    <div class="error-icon">⚠</div>
+    <p id="perfusion-error-text">An error occurred.</p>
+    <button class="btn btn-demo" onclick="resetPerfusion()">Reset</button>
+  </div>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/perfusion.js"></script>
+</body>
+</html>

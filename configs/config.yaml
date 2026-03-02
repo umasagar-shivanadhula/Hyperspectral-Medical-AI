@@ -1,0 +1,106 @@
+# ============================================================
+# Unified HSI Medical Framework — Configuration
+# ============================================================
+
+project:
+  name: "Unified HSI Medical Framework"
+  version: "1.0.0"
+  description: "Spectral-Spatial Multi-Classifier Hyperspectral Medical Image Analysis"
+
+# ── Backend ──────────────────────────────────────────────────
+backend:
+  host: "0.0.0.0"
+  port: 8000
+  reload: true
+  cors_origins: ["*"]
+
+# ── Dataset Paths ────────────────────────────────────────────
+datasets:
+  perfusion:
+    name: "SPECTRALPACA"
+    path: "E:/umasagar/datasets/perfusion_dataset/SPECTRALPACA"
+    n_subjects: 10
+    n_frames: 204510
+    n_bands: 16
+    classes:
+      - "Normal Perfusion"
+      - "Reduced Perfusion"
+      - "Abnormal Perfusion"
+
+  tumor:
+    name: "HistologyHSI-GB"
+    path: "E:/umasagar/datasets/tumor_dataset/HistologyHSI-GB"
+    n_patients: 13
+    n_bands: 16
+    classes:
+      - "Non-Tumor Tissue"
+      - "Glioblastoma Tumor"
+
+# ── Preprocessing ────────────────────────────────────────────
+preprocessing:
+  patch_size: 32
+  stride: 16
+  apply_radiometric_correction: true
+  remove_bad_bands: true
+  noise_threshold: 0.01
+
+# ── Feature Extraction ───────────────────────────────────────
+features:
+  spectral:
+    compute_mean: true
+    compute_variance: true
+    compute_std: true
+    compute_skewness: true
+    compute_kurtosis: true
+    compute_ndi: true
+  spatial:
+    glcm_levels: 8
+    glcm_directions: [0, 45, 90, 135]
+    lbp_bins: 8
+    n_bands_use: 4
+
+# ── Dimensionality Reduction ─────────────────────────────────
+pca:
+  perfusion_n_components: 30
+  tumor_n_components: 25
+  svd_solver: "full"
+
+# ── Classifiers ──────────────────────────────────────────────
+classifiers:
+  random_forest:
+    n_estimators: 200
+    max_depth: 15
+    min_samples_split: 5
+    class_weight: "balanced"
+    random_state: 42
+    n_jobs: -1
+
+  svm:
+    kernel: "rbf"
+    C: 10.0
+    gamma: "scale"
+    probability: true
+    class_weight: "balanced"
+    random_state: 42
+
+# ── Fusion ───────────────────────────────────────────────────
+fusion:
+  method: "softmax"
+  weights:
+    random_forest: 1.0
+    svm: 1.0
+  temperature: 1.0
+
+# ── Training ─────────────────────────────────────────────────
+training:
+  patient_wise_split: true
+  test_patients_perfusion: 2
+  test_patients_tumor: 3
+  cross_validation_folds: 5
+  random_state: 42
+
+# ── Outputs ──────────────────────────────────────────────────
+outputs:
+  models_dir: "outputs/trained_models"
+  logs_dir: "outputs/logs"
+  results_dir: "outputs/prediction_results"
