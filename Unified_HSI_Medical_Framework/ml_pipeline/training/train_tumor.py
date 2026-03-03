@@ -37,9 +37,17 @@ from ml_pipeline.evaluation.metrics import evaluate_classifier, compute_metrics_
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
 
-DATASET_ROOT = Path(__file__).parents[2] / "datasets" / "tumor_dataset" / "HistologyHSI-GB"
-OUTPUT_DIR = Path(__file__).parents[2] / "outputs" / "trained_models"
-EVAL_DIR = Path(__file__).parents[2] / "outputs" / "evaluation_metrics"
+# Dataset root resolution:
+# - If HSI_DATASETS_ROOT is set, use it as the root for all datasets.
+# - Otherwise default to <project_root>/datasets.
+_PROJECT_ROOT = Path(__file__).parents[2]
+_DATASETS_ROOT = Path(
+    os.getenv("HSI_DATASETS_ROOT", str(_PROJECT_ROOT / "datasets"))
+)
+
+DATASET_ROOT = _DATASETS_ROOT / "tumor_dataset" / "HistologyHSI-GB"
+OUTPUT_DIR = _PROJECT_ROOT / "outputs" / "trained_models"
+EVAL_DIR = _PROJECT_ROOT / "outputs" / "evaluation_metrics"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
