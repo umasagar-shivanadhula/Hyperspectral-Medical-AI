@@ -29,6 +29,7 @@ from ml_pipeline.feature_extraction.spectral_features import extract_spectral_fe
 from ml_pipeline.feature_extraction.spatial_features import extract_spatial_features
 from ml_pipeline.fusion.softmax_fusion import SoftmaxFusion
 from ml_pipeline.evaluation.metrics import evaluate_classifier
+from ml_pipeline.data_loader.b2nd_loader import load_b2nd_cube
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger(__name__)
@@ -67,41 +68,96 @@ def load_spectralpaca_dataset():
 
 
 def _load_real_dataset():
-    """Load from actual SPECTRALPACA directory structure."""
+    """
+    Load from actual SPECTRALPACA directory structure.
+
+    Supports two layouts:
+      1) Legacy repo layout with per-subject folders containing .npy cubes.
+      2) Flat .b2nd files directly under DATASET_ROOT with optional dark.b2nd.
+    """
     features_list = []
     labels_list = []
     patient_ids = []
 
-    label_map = {"normal": 0, "reduced": 1, "abnormal": 2}
+    # Optional dark reference cube for radiometric correction
+    dark_ref = None
+    dark_path = DATASET_ROOT / "dark.b2nd"
+    if dark_path.exists():
+        try:
+            dark_ref = load_b2nd_cube(dark_path)
+            log.info(f"Loaded dark reference from {dark_path}")
+        except Exception as e:
+            log.warning(f"Failed to load dark reference {dark_path}: {e}")
 
-    for subject_dir in sorted(DATASET_ROOT.iterdir()):
-        if not subject_dir.is_dir():
+    for entry in sorted(DATASET_ROOT.iterdir()):
+        # Case 1: legacy layout with subject folders and .npy cubes
+        if entry.is_dir():
+            pid = entry.name
+            log.info(f"Loading subject (legacy layout): {pid}")
+
+            for phase_dir in entry.iterdir():
+                if not phase_dir.is_dir():
+                    continue
+                phase = phase_dir.name.lower()
+                if "normal" in phase or "recovery" in phase:
+                    label = 0
+                elif "clamp" in phase or "reduced" in phase:
+                    label = 1
+                else:
+                    label = 2
+
+                for cube_file in phase_dir.glob("*.npy"):
+                    try:
+                        cube = np.load(str(cube_file)).astype(np.float32)
+                        cube = apply_radiometric_correction(cube)
+                        for _, _, patch in extract_patches(cube, PATCH_SIZE):
+                            spec_feat = extract_spectral_features(patch)
+                            spat_feat = extract_spatial_features(patch)
+                            feat = np.concatenate([spec_feat, spat_feat])
+                            features_list.append(feat)
+                            labels_list.append(label)
+                            patient_ids.append(pid)
+                    except Exception as e:
+                        log.warning(f"Failed to load {cube_file}: {e}")
             continue
-        pid = subject_dir.name
-        log.info(f"Loading subject: {pid}")
 
-        for phase_dir in subject_dir.iterdir():
-            phase = phase_dir.name.lower()
-            if "normal" in phase or "recovery" in phase:
+        # Case 2: flat .b2nd files at dataset root
+        if entry.is_file() and entry.suffix.lower() == ".b2nd":
+            name_lower = entry.name.lower()
+            if name_lower.startswith("dark"):
+                # already handled as dark reference above
+                continue
+
+            pid = entry.stem
+            log.info(f"Loading subject from B2ND cube: {entry.name}")
+
+            # Infer class label from filename keywords
+            if "normal" in name_lower or "recovery" in name_lower:
                 label = 0
-            elif "clamp" in phase or "reduced" in phase:
+            elif "clamp" in name_lower or "reduced" in name_lower:
                 label = 1
-            else:
+            elif "abnormal" in name_lower:
                 label = 2
+            else:
+                log.warning(
+                    f"Could not infer perfusion label from filename '{entry.name}'. "
+                    "Expected keywords: normal, reduced, clamp, recovery, abnormal. "
+                    "Skipping this file."
+                )
+                continue
 
-            for cube_file in phase_dir.glob("*.npy"):
-                try:
-                    cube = np.load(str(cube_file)).astype(np.float32)
-                    cube = apply_radiometric_correction(cube)
-                    for _, _, patch in extract_patches(cube, PATCH_SIZE):
-                        spec_feat = extract_spectral_features(patch)
-                        spat_feat = extract_spatial_features(patch)
-                        feat = np.concatenate([spec_feat, spat_feat])
-                        features_list.append(feat)
-                        labels_list.append(label)
-                        patient_ids.append(pid)
-                except Exception as e:
-                    log.warning(f"Failed to load {cube_file}: {e}")
+            try:
+                cube = load_b2nd_cube(entry)
+                cube = apply_radiometric_correction(cube, dark_ref=dark_ref)
+                for _, _, patch in extract_patches(cube, PATCH_SIZE):
+                    spec_feat = extract_spectral_features(patch)
+                    spat_feat = extract_spatial_features(patch)
+                    feat = np.concatenate([spec_feat, spat_feat])
+                    features_list.append(feat)
+                    labels_list.append(label)
+                    patient_ids.append(pid)
+            except Exception as e:
+                log.warning(f"Failed to load {entry}: {e}")
 
     return np.array(features_list), np.array(labels_list), patient_ids
 
