@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perfusion Analysis — HSI MED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
+<style>
+  /* ── Perfusion-specific accent vars ── */
+  :root {
+    --page-accent:     #FB7185;
+    --page-accent-dk:  #BE123C;
+    --page-glow:       rgba(251,113,133,0.12);
+    --page-border:     rgba(251,113,133,0.25);
+  }
+
+  /* Animated blood flow background pulse */
+  .hero-vessel-anim {
+    animation: vessel-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes vessel-pulse {
+    0%, 100% { opacity: 0.14; }
+    50% { opacity: 0.22; }
+  }
+
+  /* Flowing blood cells animation */
+  .blood-cell {
+    animation: flow-along 6s linear infinite;
+    opacity: 0;
+  }
+
+  .blood-cell:nth-child(1) { animation-delay: 0s; }
+  .blood-cell:nth-child(2) { animation-delay: 1.5s; }
+  .blood-cell:nth-child(3) { animation-delay: 3s; }
+  .blood-cell:nth-child(4) { animation-delay: 4.5s; }
+
+  @keyframes flow-along {
+    0%   { opacity: 0; offset-distance: 0%; }
+    5%   { opacity: 0.8; }
+    90%  { opacity: 0.8; }
+    100% { opacity: 0; offset-distance: 100%; }
+  }
+</style>
+</head>
+<body class="analysis-page perfusion-page">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-icon">H</div>
+    <span>HSI<span class="accent">MED</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="perfusion.html" class="active">Perfusion Analysis</a></li>
+    <li><a href="tumor.html">Tumor Detection</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="index.html#pipeline">Methodology</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE HERO — Perfusion -->
+<div class="page-hero">
+  <div class="page-hero-bg">
+    <!-- Circulatory / blood vessel background SVG -->
+    <svg class="hero-vessel-anim" width="100%" height="100%" viewBox="0 0 1400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="position:absolute;inset:0">
+      <defs>
+        <linearGradient id="vg1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#E11D48" stop-opacity="0"/>
+          <stop offset="20%" stop-color="#E11D48" stop-opacity="1"/>
+          <stop offset="80%" stop-color="#BE123C" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#BE123C" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="vg2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#FB7185" stop-opacity="0"/>
+          <stop offset="30%" stop-color="#FB7185" stop-opacity="0.7"/>
+          <stop offset="70%" stop-color="#F43F5E" stop-opacity="0.7"/>
+          <stop offset="100%" stop-color="#F43F5E" stop-opacity="0"/>
+        </linearGradient>
+        <filter id="vblur">
+          <feGaussianBlur stdDeviation="2.5"/>
+        </filter>
+      </defs>
+      <!-- Large arteries -->
+      <path d="M0,130 C100,110 200,155 300,130 C400,105 500,150 600,130 C700,110 800,150 900,128 C1000,106 1100,148 1200,130 C1300,112 1380,132 1400,128" stroke="url(#vg1)" stroke-width="5" fill="none" filter="url(#vblur)"/>
+      <path d="M0,130 C100,110 200,155 300,130 C400,105 500,150 600,130 C700,110 800,150 900,128 C1000,106 1100,148 1200,130 C1300,112 1380,132 1400,128" stroke="url(#vg1)" stroke-width="2" fill="none"/>
+      <!-- Veins -->
+      <path d="M0,155 C100,135 200,175 300,152 C400,129 500,170 600,150 C700,130 800,168 900,148 C1000,128 1100,165 1200,148 C1300,131 1380,150 1400,146" stroke="url(#vg2)" stroke-width="3" fill="none" filter="url(#vblur)"/>
+      <!-- Branch capillaries -->
+      <path d="M300,130 C295,105 308,80 305,55 C302,30 310,15 308,0" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <path d="M600,130 C596,108 602,85 599,62" stroke="#FB7185" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <path d="M900,128 C898,105 905,82 902,60 C899,38 906,18 903,0" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <path d="M1200,130 C1197,110 1202,88 1200,66" stroke="#FB7185" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Lower branches -->
+      <path d="M300,152 C295,175 302,198 300,220 C298,242 304,260 302,260" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M600,150 C596,172 602,194 600,216" stroke="#FB7185" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M900,148 C897,170 903,192 901,214 C899,236 904,260 902,260" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <!-- Oxygenation glow spots -->
+      <circle cx="300" cy="130" r="8" fill="#E11D48" opacity="0.15" filter="url(#vblur)"/>
+      <circle cx="600" cy="130" r="10" fill="#FB7185" opacity="0.12" filter="url(#vblur)"/>
+      <circle cx="900" cy="128" r="8" fill="#E11D48" opacity="0.15" filter="url(#vblur)"/>
+      <circle cx="1200" cy="130" r="7" fill="#FB7185" opacity="0.12" filter="url(#vblur)"/>
+    </svg>
+    <!-- Deep gradient overlay -->
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(15,10,14,0.7) 0%, rgba(25,11,20,0.4) 50%, rgba(15,10,14,0.7) 100%)"></div>
+  </div>
+  <div class="page-hero-content">
+    <div class="page-hero-eyebrow">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      SpectralPACA Dataset · 16 Spectral Bands · 10 Subjects
+    </div>
+    <h1 class="page-hero-title">Tissue Perfusion Analysis</h1>
+    <p class="page-hero-subtitle">Hyperspectral assessment of tissue blood flow and oxygenation patterns across three clinical states</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard-layout">
+
+  <!-- Upload Panel -->
+  <div class="panel upload-panel">
+    <div class="panel-header">
+      <div class="panel-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h2>Upload Hyperspectral Data</h2>
+      <div class="panel-badge">SPECTRALPACA</div>
+    </div>
+
+    <div class="upload-zone" id="perfusion-drop-zone">
+      <div class="upload-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <p>Drop hyperspectral file here or click to browse</p>
+      <p class="upload-hint">Supports: .b2nd / .b2nb / .npy / .npz / .h5 / .hdr+.raw</p>
+      <input type="file" id="perfusion-file-input" accept=".b2nd,.b2nb,.npy,.npz,.h5,.hdr,.bin,.bip,.bil,.bsq" hidden>
+    </div>
+
+    <div class="upload-controls">
+      <button class="btn-upload" id="perfusion-browse-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        Choose File
+      </button>
+      <span class="file-name-display" id="perfusion-file-name">No file selected</span>
+    </div>
+
+    <!-- Second file input: shows only when .hdr is selected -->
+    <div id="perfusion-raw-row" style="display:none; margin-top:10px; padding:12px 16px; background:rgba(251,113,133,0.06); border:1px solid rgba(251,113,133,0.25); border-radius:10px;">
+      <div style="font-size:12px; color:#FB7185; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ENVI .hdr detected — also select the companion <strong>.raw</strong> binary file <span style="opacity:0.6;">(may appear without extension in Windows)</span>:
+      </div>
+      <div class="upload-controls" style="margin:0;">
+        <button class="btn-upload" id="perfusion-raw-browse-btn" style="border-color:rgba(251,113,133,0.4);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Choose .raw File
+        </button>
+        <span class="file-name-display" id="perfusion-raw-name" style="color:#FB7185;">No .raw file selected</span>
+        <input type="file" id="perfusion-raw-input" accept="*" hidden>
+      </div>
+    </div>
+
+    <div class="local-path-row">
+      <div class="local-path-hint">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        b2nd files are 27–43 GB — paste local server path instead:
+      </div>
+      <div class="local-path-input-row">
+        <input type="text" id="perfusion-local-path" class="local-path-input"
+          placeholder="E:/datasets/SPECTRALPACA/subject_03.b2nd"
+          onfocus="this.style.borderColor='rgba(251,113,133,0.5)'"
+          onblur="this.style.borderColor=''">
+        <button class="local-path-clear"
+          onclick="document.getElementById('perfusion-local-path').value=''; document.getElementById('perfusion-run-btn').disabled=!window._perfFile; this.style.display='none'">✕</button>
+      </div>
+    </div>
+
+    <button class="btn-run" id="perfusion-run-btn" disabled>
+      <span class="btn-spinner hidden" id="perfusion-spinner">⟳</span>
+      <span id="perfusion-btn-text">Run Perfusion Analysis</span>
+    </button>
+
+    <!-- ── PROGRESS PANEL ── -->
+    <div id="perfusion-progress-panel" style="display:none; margin-top:16px; background:rgba(251,113,133,0.05); border:1px solid rgba(251,113,133,0.2); border-radius:14px; padding:20px 22px;">
+      <!-- Header row: title + elapsed timer -->
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <span class="timer-pulse" style="background:#FB7185; box-shadow:0 0 8px rgba(251,113,133,0.6);"></span>
+          <span style="font-family:var(--font-head); font-weight:700; font-size:13.5px; color:var(--text-primary);">Running Perfusion Analysis</span>
+        </div>
+        <div id="perfusion-timer" class="analysis-timer" style="display:flex; gap:5px; align-items:center; padding:0; background:none; border:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="perfusion-timer-secs" class="timer-secs" style="color:#FB7185; font-size:12px;">0s</span>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; margin-bottom:18px;">
+        <div id="perfusion-progress-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#FB7185,#FBBF24); border-radius:2px; transition:width 0.6s ease;"></div>
+      </div>
+
+      <!-- Steps list -->
+      <div id="perfusion-steps" style="display:flex; flex-direction:column; gap:8px;">
+        <div class="prog-step" id="perf-step-0" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Uploading file to server</span>
+        </div>
+        <div class="prog-step" id="perf-step-1" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Loading hyperspectral cube</span>
+        </div>
+        <div class="prog-step" id="perf-step-2" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Extracting spectral-spatial features</span>
+        </div>
+        <div class="prog-step" id="perf-step-3" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Running RF + SVM classifiers</span>
+        </div>
+        <div class="prog-step" id="perf-step-4" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Fusion &amp; generating results</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-link">
+      <button class="btn-demo" id="perfusion-demo-btn">
+        ▶ Run Demo with Synthetic Data
+      </button>
+    </div>
+  </div>
+
+  <!-- AI Summary -->
+  <div class="panel summary-panel hidden" id="perfusion-summary-panel">
+    <div class="panel-header">
+      <div class="panel-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <h2>
+        AI Summary: <span class="summary-result" id="perfusion-summary-label">—</span>
+        <span class="summary-conf" id="perfusion-summary-conf"></span>
+      </h2>
+    </div>
+    <p class="summary-text" id="perfusion-summary-text">Awaiting analysis...</p>
+    <div class="summary-meta">
+      <div class="meta-item">
+        <span class="meta-key">Model</span>
+        <span class="meta-val">RF + SVM Softmax Fusion</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-key">Bands</span>
+        <span class="meta-val">16 Spectral Channels</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-key">Task</span>
+        <span class="meta-val">Perfusion Classification</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viz Row -->
+  <div class="viz-row hidden" id="perfusion-viz-row">
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Perfusion Map</div>
+      <div class="heatmap-container" id="perfusion-heatmap"></div>
+      <div class="colorbar-row">
+        <span class="cb-label green">Normal</span>
+        <div class="colorbar perfusion-bar"></div>
+        <span class="cb-label red">Abnormal</span>
+      </div>
+    </div>
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Spectral Signature</div>
+      <canvas id="perfusion-spectral-chart" height="220"></canvas>
+    </div>
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Fusion Predictions</div>
+      <div class="fusion-summary" id="perfusion-fusion-summary"></div>
+      <div class="final-result-badge" id="perfusion-final-badge"></div>
+    </div>
+  </div>
+
+  <!-- Classifiers Row -->
+  <div class="classifiers-row hidden" id="perfusion-classifiers-row">
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spectral Predictions</div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-blue"></span>
+        <span class="clf-name">Random Forest:</span>
+        <span class="clf-val" id="perf-rf-label">—</span>
+        <span class="clf-conf" id="perf-rf-conf"></span>
+      </div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-cyan"></span>
+        <span class="clf-name">Confidence:</span>
+        <span class="clf-val" id="perf-rf-conf-val">—</span>
+      </div>
+      <canvas id="perf-rf-chart" height="120"></canvas>
+    </div>
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spatial Predictions</div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-blue"></span>
+        <span class="clf-name">SVM:</span>
+        <span class="clf-val" id="perf-svm-label">—</span>
+      </div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-orange"></span>
+        <span class="clf-name">Confidence:</span>
+        <span class="clf-val" id="perf-svm-conf-val">—</span>
+      </div>
+      <canvas id="perf-svm-chart" height="120"></canvas>
+    </div>
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Fusion Probabilities</div>
+      <div class="prob-row">
+        <span class="prob-dot dot-green"></span>
+        <span class="prob-label">Normal Perfusion:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="perf-prob-normal-bar" style="background:var(--green)"></div></span>
+        <span class="prob-pct" id="perf-prob-normal">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-dot dot-orange"></span>
+        <span class="prob-label">Reduced Perfusion:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="perf-prob-reduced-bar" style="background:var(--amber)"></div></span>
+        <span class="prob-pct" id="perf-prob-reduced">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-dot dot-red"></span>
+        <span class="prob-label">Abnormal Perfusion:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="perf-prob-abnormal-bar" style="background:var(--red)"></div></span>
+        <span class="prob-pct" id="perf-prob-abnormal">—</span>
+      </div>
+      <div class="final-label-row" id="perf-final-row"></div>
+    </div>
+  </div>
+
+  <!-- Model Evaluation -->
+  <div class="panel evaluation-panel" id="perfusion-eval-panel">
+    <div class="panel-header">
+      <div class="panel-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FB7185" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h2>Model Evaluation</h2>
+      <div class="panel-badge">Last Training Run</div>
+    </div>
+    <div id="perfusion-eval-content">
+      <p class="eval-loading" id="perfusion-eval-loading">Loading evaluation metrics…</p>
+      <div class="eval-metrics hidden" id="perfusion-eval-metrics">
+        <div class="eval-stats">
+          <span class="eval-stat"><strong>Fusion Accuracy:</strong> <span id="perf-eval-accuracy">—</span></span>
+          <span class="eval-stat"><strong>F1 Score:</strong> <span id="perf-eval-f1">—</span></span>
+        </div>
+        <div class="panel-header-sm">Confusion Matrix (Fusion)</div>
+        <div id="perfusion-confusion-matrix" class="confusion-matrix-container"></div>
+      </div>
+      <p class="eval-none hidden" id="perfusion-eval-none">No evaluation data. Run <code>python ml_pipeline/training/train_perfusion.py</code> first.</p>
+    </div>
+  </div>
+
+  <!-- Error Panel -->
+  <div class="panel error-panel hidden" id="perfusion-error-panel">
+    <div class="error-icon">⚠</div>
+    <p id="perfusion-error-text">An error occurred.</p>
+    <button class="btn-demo" onclick="resetPerfusion()">Reset</button>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">HSI<span class="accent">MED</span> Framework</div>
+    <p>Tissue Perfusion Abnormality Detection — SpectralPACA Dataset</p>
+    <p class="footer-tech">Python · FastAPI · scikit-learn · NumPy · Spectral Python</p>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/perfusion.js"></script>
+</body>
+</html>

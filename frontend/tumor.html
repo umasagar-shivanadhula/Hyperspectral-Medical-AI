@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tumor Detection — HSI MED</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.1/plotly.min.js"></script>
+<style>
+  :root {
+    --page-accent:    #34D399;
+    --page-accent-dk: #065F46;
+    --page-glow:      rgba(52,211,153,0.1);
+    --page-border:    rgba(52,211,153,0.25);
+  }
+
+  .hero-cell-anim {
+    animation: cell-breathe 5s ease-in-out infinite;
+  }
+
+  @keyframes cell-breathe {
+    0%, 100% { opacity: 0.13; }
+    50%       { opacity: 0.20; }
+  }
+
+  /* Rotating scan ring animation */
+  .scan-ring {
+    transform-origin: center;
+    animation: scan-rotate 12s linear infinite;
+  }
+
+  @keyframes scan-rotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .scan-pulse {
+    animation: scan-ping 3s ease-in-out infinite;
+  }
+
+  @keyframes scan-ping {
+    0%, 100% { opacity: 0.3; r: 40; }
+    50%       { opacity: 0.7; r: 46; }
+  }
+</style>
+</head>
+<body class="analysis-page tumor-page">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-icon">H</div>
+    <span>HSI<span class="accent">MED</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="perfusion.html">Perfusion Analysis</a></li>
+    <li><a href="tumor.html" class="active">Tumor Detection</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="index.html#pipeline">Methodology</a></li>
+  </ul>
+</nav>
+
+<!-- PAGE HERO — Tumor -->
+<div class="page-hero">
+  <div class="page-hero-bg">
+    <!-- Brain/cellular neural tissue SVG background -->
+    <svg class="hero-cell-anim" width="100%" height="100%" viewBox="0 0 1400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="position:absolute;inset:0">
+      <defs>
+        <filter id="tcell-glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="tcell-blur">
+          <feGaussianBlur stdDeviation="2"/>
+        </filter>
+      </defs>
+
+      <!-- Neural cell bodies distributed across hero -->
+      <circle cx="120" cy="80"  r="26" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.55" filter="url(#tcell-glow)"/>
+      <circle cx="280" cy="160" r="22" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.5"/>
+      <circle cx="420" cy="70"  r="30" stroke="#10B981" stroke-width="2"   fill="none" opacity="0.6" filter="url(#tcell-glow)"/>
+      <circle cx="560" cy="180" r="20" stroke="#059669" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <circle cx="700" cy="90"  r="28" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.55"/>
+      <circle cx="840" cy="175" r="24" stroke="#10B981" stroke-width="2"   fill="none" opacity="0.6" filter="url(#tcell-glow)"/>
+      <circle cx="980" cy="75"  r="22" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.45"/>
+      <circle cx="1120" cy="165" r="28" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.55"/>
+      <circle cx="1280" cy="80" r="24"  stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+      <!-- Tumor cluster (highlighted differently) -->
+      <circle cx="700" cy="90"  r="16" stroke="#06B6D4" stroke-width="1" fill="none" opacity="0.35" stroke-dasharray="5 3"/>
+      <circle cx="700" cy="90"  r="8"  fill="#34D399" opacity="0.12" filter="url(#tcell-blur)"/>
+
+      <!-- Neural axons / connections -->
+      <line x1="146" y1="80"  x2="258" y2="160" stroke="#10B981" stroke-width="1" opacity="0.35"/>
+      <line x1="302" y1="160" x2="390" y2="70"  stroke="#34D399" stroke-width="1" opacity="0.35"/>
+      <line x1="450" y1="70"  x2="540" y2="180" stroke="#10B981" stroke-width="1" opacity="0.35"/>
+      <line x1="580" y1="180" x2="672" y2="90"  stroke="#34D399" stroke-width="1" opacity="0.35"/>
+      <line x1="728" y1="90"  x2="816" y2="175" stroke="#10B981" stroke-width="1" opacity="0.35"/>
+      <line x1="864" y1="175" x2="958" y2="75"  stroke="#34D399" stroke-width="1" opacity="0.35"/>
+      <line x1="1002" y1="75" x2="1092" y2="165" stroke="#10B981" stroke-width="1" opacity="0.35"/>
+      <line x1="1148" y1="165" x2="1256" y2="80" stroke="#34D399" stroke-width="1" opacity="0.35"/>
+
+      <!-- Dendrite branches -->
+      <path d="M420,40 C418,25 425,15 422,0" stroke="#10B981" stroke-width="1" fill="none" opacity="0.4"/>
+      <path d="M420,100 C415,115 418,135 414,155 C410,175 415,200 412,220" stroke="#10B981" stroke-width="1" fill="none" opacity="0.4"/>
+      <path d="M840,151 C836,175 840,200 837,225 C834,250 838,260 836,260" stroke="#10B981" stroke-width="1" fill="none" opacity="0.4"/>
+      <path d="M1120,137 C1116,160 1120,185 1117,210" stroke="#34D399" stroke-width="1" fill="none" opacity="0.35"/>
+
+      <!-- Scan ring over tumor cluster -->
+      <g transform="translate(700,90)" class="scan-ring" opacity="0.25">
+        <circle r="42" stroke="#06B6D4" stroke-width="1" fill="none" stroke-dasharray="8 4"/>
+        <circle r="50" stroke="#10B981" stroke-width="0.5" fill="none" stroke-dasharray="4 8"/>
+      </g>
+      <circle cx="700" cy="90" r="40" stroke="#34D399" stroke-width="0.8" fill="none" opacity="0.2" class="scan-pulse"/>
+    </svg>
+    <!-- Gradient overlay -->
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg, rgba(7,19,15,0.75) 0%, rgba(9,31,23,0.45) 50%, rgba(7,19,15,0.75) 100%)"></div>
+  </div>
+
+  <div class="page-hero-content">
+    <div class="page-hero-eyebrow">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      HistologyHSI-GB Dataset · 16 Spectral Bands · 13 Patients
+    </div>
+    <h1 class="page-hero-title">Glioblastoma Tumor Detection</h1>
+    <p class="page-hero-subtitle">Hyperspectral histology imaging to distinguish tumor tissue from healthy neural tissue with spatial probability mapping</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard-layout">
+
+  <!-- Upload Panel -->
+  <div class="panel upload-panel">
+    <div class="panel-header">
+      <div class="panel-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <h2>Upload Hyperspectral Data</h2>
+      <div class="panel-badge">HistologyHSI-GB</div>
+    </div>
+
+    <div class="upload-zone" id="tumor-drop-zone">
+      <div class="upload-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <p>Drop hyperspectral histology file here or click to browse</p>
+      <p class="upload-hint">Supports: .hdr+.raw / .npy / .npz / .h5 (16-band HSI cubes)</p>
+      <input type="file" id="tumor-file-input" accept=".hdr,.npy,.npz,.h5,.bin,.bip,.bil,.bsq" hidden>
+    </div>
+
+    <div class="upload-controls">
+      <button class="btn-upload" id="tumor-browse-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        Choose File
+      </button>
+      <span class="file-name-display" id="tumor-file-name">No file selected</span>
+    </div>
+
+    <!-- Second file input: shows only when .hdr is selected -->
+    <div id="tumor-raw-row" style="display:none; margin-top:10px; padding:12px 16px; background:rgba(52,211,153,0.06); border:1px solid rgba(52,211,153,0.25); border-radius:10px;">
+      <div style="font-size:12px; color:#34D399; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        ENVI .hdr detected — also select the companion <strong>.raw</strong> binary file <span style="opacity:0.6;">(may appear without extension in Windows)</span>:
+      </div>
+      <div class="upload-controls" style="margin:0;">
+        <button class="btn-upload" id="tumor-raw-browse-btn" style="border-color:rgba(52,211,153,0.4);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          Choose .raw File
+        </button>
+        <span class="file-name-display" id="tumor-raw-name" style="color:#34D399;">No .raw file selected</span>
+        <input type="file" id="tumor-raw-input" accept="*" hidden>
+      </div>
+    </div>
+
+    <div class="local-path-row">
+      <div class="local-path-hint">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Large files — paste local server path instead:
+      </div>
+      <div class="local-path-input-row">
+        <input type="text" id="tumor-local-path" class="local-path-input"
+          placeholder="E:/datasets/HistologyHSI-GB/patient_01.hdr"
+          onfocus="this.style.borderColor='rgba(52,211,153,0.5)'"
+          onblur="this.style.borderColor=''">
+        <button class="local-path-clear"
+          onclick="document.getElementById('tumor-local-path').value=''; document.getElementById('tumor-run-btn').disabled=!window._tumorFile; this.style.display='none'">✕</button>
+      </div>
+    </div>
+
+    <button class="btn-run" id="tumor-run-btn" disabled>
+      <span class="btn-spinner hidden" id="tumor-spinner">⟳</span>
+      <span id="tumor-btn-text">Run Tumor Detection</span>
+    </button>
+
+    <!-- ── PROGRESS PANEL ── -->
+    <div id="tumor-progress-panel" style="display:none; margin-top:16px; background:rgba(52,211,153,0.05); border:1px solid rgba(52,211,153,0.2); border-radius:14px; padding:20px 22px;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+        <div style="display:flex; align-items:center; gap:9px;">
+          <span class="timer-pulse" style="background:#34D399; box-shadow:0 0 8px rgba(52,211,153,0.6);"></span>
+          <span style="font-family:var(--font-head); font-weight:700; font-size:13.5px; color:var(--text-primary);">Running Tumor Detection</span>
+        </div>
+        <div id="tumor-timer" class="analysis-timer" style="display:flex; gap:5px; align-items:center; padding:0; background:none; border:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span id="tumor-timer-secs" class="timer-secs" style="color:#34D399; font-size:12px;">0s</span>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; margin-bottom:18px;">
+        <div id="tumor-progress-bar" style="height:100%; width:0%; background:linear-gradient(90deg,#34D399,#38BDF8); border-radius:2px; transition:width 0.6s ease;"></div>
+      </div>
+
+      <!-- Steps list -->
+      <div id="tumor-steps" style="display:flex; flex-direction:column; gap:8px;">
+        <div class="prog-step" id="tumor-step-0" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Uploading histology file to server</span>
+        </div>
+        <div class="prog-step" id="tumor-step-1" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Loading hyperspectral cube</span>
+        </div>
+        <div class="prog-step" id="tumor-step-2" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Extracting spectral-spatial features</span>
+        </div>
+        <div class="prog-step" id="tumor-step-3" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Running RF + SVM classifiers</span>
+        </div>
+        <div class="prog-step" id="tumor-step-4" data-state="idle">
+          <span class="step-icon"></span>
+          <span class="step-label">Fusion &amp; generating results</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-link">
+      <button class="btn-demo" id="tumor-demo-btn">
+        ▶ Run Demo with Synthetic Data
+      </button>
+    </div>
+  </div>
+
+  <!-- AI Summary -->
+  <div class="panel summary-panel hidden" id="tumor-summary-panel">
+    <div class="panel-header">
+      <div class="panel-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/><path d="M12 8v4l3 3"/></svg>
+      </div>
+      <h2>
+        AI Summary: <span class="summary-result" id="tumor-summary-label">—</span>
+        <span class="summary-conf" id="tumor-summary-conf"></span>
+      </h2>
+    </div>
+    <p class="summary-text" id="tumor-summary-text">Awaiting analysis...</p>
+    <div class="summary-meta">
+      <div class="meta-item">
+        <span class="meta-key">Model</span>
+        <span class="meta-val">RF + SVM Softmax Fusion</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-key">Bands</span>
+        <span class="meta-val">16 Spectral Channels</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-key">Task</span>
+        <span class="meta-val">Tumor Classification</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Viz Row -->
+  <div class="viz-row hidden" id="tumor-viz-row">
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Tumor Probability Map</div>
+      <div class="heatmap-container" id="tumor-heatmap"></div>
+      <div class="colorbar-row">
+        <span class="cb-label green">Non-Tumor</span>
+        <div class="colorbar tumor-bar"></div>
+        <span class="cb-label red">Tumor</span>
+      </div>
+    </div>
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Spectral Signature</div>
+      <canvas id="tumor-spectral-chart" height="220"></canvas>
+    </div>
+    <div class="panel viz-panel">
+      <div class="panel-header-sm">Fusion Predictions</div>
+      <div class="fusion-summary" id="tumor-fusion-summary"></div>
+      <div class="final-result-badge" id="tumor-final-badge"></div>
+    </div>
+  </div>
+
+  <!-- Classifiers Row -->
+  <div class="classifiers-row hidden" id="tumor-classifiers-row">
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spectral Predictions</div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-blue"></span>
+        <span class="clf-name">Random Forest:</span>
+        <span class="clf-val" id="tumor-rf-label">—</span>
+        <span class="clf-conf" id="tumor-rf-conf"></span>
+      </div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-cyan"></span>
+        <span class="clf-name">Confidence:</span>
+        <span class="clf-val" id="tumor-rf-conf-val">—</span>
+      </div>
+      <canvas id="tumor-rf-chart" height="120"></canvas>
+    </div>
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Spatial Predictions</div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-blue"></span>
+        <span class="clf-name">SVM:</span>
+        <span class="clf-val" id="tumor-svm-label">—</span>
+      </div>
+      <div class="clf-entry">
+        <span class="clf-dot dot-orange"></span>
+        <span class="clf-name">Confidence:</span>
+        <span class="clf-val" id="tumor-svm-conf-val">—</span>
+      </div>
+      <canvas id="tumor-svm-chart" height="120"></canvas>
+    </div>
+    <div class="panel clf-panel">
+      <div class="panel-header-sm">Fusion Probabilities</div>
+      <div class="prob-row">
+        <span class="prob-dot dot-green"></span>
+        <span class="prob-label">Non-Tumor Tissue:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="tumor-prob-normal-bar" style="background:var(--green)"></div></span>
+        <span class="prob-pct" id="tumor-prob-normal">—</span>
+      </div>
+      <div class="prob-row">
+        <span class="prob-dot dot-red"></span>
+        <span class="prob-label">Glioblastoma Tumor:</span>
+        <span class="prob-bar-wrap"><div class="prob-bar" id="tumor-prob-tumor-bar" style="background:var(--red)"></div></span>
+        <span class="prob-pct" id="tumor-prob-tumor">—</span>
+      </div>
+      <div class="final-label-row" id="tumor-final-row"></div>
+    </div>
+  </div>
+
+  <!-- Model Evaluation -->
+  <div class="panel evaluation-panel" id="tumor-eval-panel">
+    <div class="panel-header">
+      <div class="panel-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <h2>Model Evaluation</h2>
+      <div class="panel-badge">Last Training Run</div>
+    </div>
+    <div id="tumor-eval-content">
+      <p class="eval-loading" id="tumor-eval-loading">Loading evaluation metrics…</p>
+      <div class="eval-metrics hidden" id="tumor-eval-metrics">
+        <div class="eval-stats">
+          <span class="eval-stat"><strong>Fusion Accuracy:</strong> <span id="tumor-eval-accuracy">—</span></span>
+          <span class="eval-stat"><strong>F1 Score:</strong> <span id="tumor-eval-f1">—</span></span>
+        </div>
+        <div class="panel-header-sm">Confusion Matrix (Fusion)</div>
+        <div id="tumor-confusion-matrix" class="confusion-matrix-container"></div>
+      </div>
+      <p class="eval-none hidden" id="tumor-eval-none">No evaluation data. Run <code>python ml_pipeline/training/train_tumor.py</code> first.</p>
+    </div>
+  </div>
+
+  <!-- Error Panel -->
+  <div class="panel error-panel hidden" id="tumor-error-panel">
+    <div class="error-icon">⚠</div>
+    <p id="tumor-error-text">An error occurred.</p>
+    <button class="btn-demo" onclick="resetTumor()">Reset</button>
+  </div>
+
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">HSI<span class="accent">MED</span> Framework</div>
+    <p>Glioblastoma Brain Tumor Detection — HistologyHSI-GB Dataset</p>
+    <p class="footer-tech">Python · FastAPI · scikit-learn · NumPy · Spectral Python</p>
+  </div>
+</footer>
+
+<script src="js/api.js"></script>
+<script src="js/tumor.js"></script>
+</body>
+</html>

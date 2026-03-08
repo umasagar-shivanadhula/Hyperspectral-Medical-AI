@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unified HSI Medical Analysis Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Figtree:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<style>
+  /* Page-specific hero spectral vis */
+  .spectral-bar { background: var(--grad-color); }
+
+  .vis-pipeline-card { animation: fade-in-up 0.6s ease 0.3s backwards; }
+  .vis-spectral-card { animation: fade-in-up 0.6s ease 0.1s backwards; }
+  .vis-stat-card    { animation: fade-in-up 0.6s ease 0.5s backwards; }
+
+  .hero-title { animation: fade-in-up 0.7s ease 0s backwards; }
+  .hero-eyebrow { animation: fade-in-up 0.5s ease 0s backwards; }
+  .hero-subtitle { animation: fade-in-up 0.6s ease 0.15s backwards; }
+  .hero-cta-row { animation: fade-in-up 0.6s ease 0.25s backwards; }
+  .hero-stats { animation: fade-in-up 0.6s ease 0.35s backwards; }
+
+  /* Spectral gradient bars */
+  .sb-1  { height:55%; background: #0284C7; }
+  .sb-2  { height:70%; background: #0EA5E9; }
+  .sb-3  { height:82%; background: #38BDF8; }
+  .sb-4  { height:68%; background: #7DD3FC; }
+  .sb-5  { height:90%; background: #38BDF8; }
+  .sb-6  { height:75%; background: #34D399; }
+  .sb-7  { height:85%; background: #10B981; }
+  .sb-8  { height:60%; background: #6EE7B7; }
+  .sb-9  { height:78%; background: #34D399; }
+  .sb-10 { height:95%; background: #38BDF8; }
+  .sb-11 { height:70%; background: #60A5FA; }
+  .sb-12 { height:82%; background: #818CF8; }
+  .sb-13 { height:64%; background: #A78BFA; }
+  .sb-14 { height:75%; background: #C084FC; }
+  .sb-15 { height:55%; background: #E879F9; }
+  .sb-16 { height:45%; background: #F0ABFC; }
+
+  /* Animated spectral scan line */
+  .spectral-scan {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: rgba(56,189,248,0.6);
+    box-shadow: 0 0 12px rgba(56,189,248,0.8);
+    animation: scan-move 3s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes scan-move {
+    0% { top: 0; opacity: 1; }
+    45% { top: calc(100% - 2px); opacity: 1; }
+    50% { top: calc(100% - 2px); opacity: 0; }
+    51% { top: 0; opacity: 0; }
+    55% { opacity: 1; }
+    100% { top: calc(100% - 2px); opacity: 1; }
+  }
+
+  .hero-vis-wrap {
+    position: relative;
+  }
+</style>
+</head>
+<body class="home-page">
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="index.html" class="nav-brand">
+    <div class="nav-logo-icon">H</div>
+    <span>HSI<span class="accent">MED</span></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="perfusion.html">Perfusion Analysis</a></li>
+    <li><a href="tumor.html">Tumor Detection</a></li>
+    <li><a href="dashboard.html">Dashboard</a></li>
+    <li><a href="#pipeline">Methodology</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-bg-gradient"></div>
+    <div class="hero-grid"></div>
+    <!-- Spectral lines background -->
+    <svg class="hero-spectral-lines" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <linearGradient id="waveGrad1" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#38BDF8" stop-opacity="0"/>
+          <stop offset="30%" stop-color="#38BDF8" stop-opacity="0.15"/>
+          <stop offset="70%" stop-color="#34D399" stop-opacity="0.1"/>
+          <stop offset="100%" stop-color="#34D399" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="waveGrad2" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#818CF8" stop-opacity="0"/>
+          <stop offset="40%" stop-color="#818CF8" stop-opacity="0.08"/>
+          <stop offset="100%" stop-color="#818CF8" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,450 C200,420 400,480 600,450 C800,420 1000,460 1200,440 C1300,430 1380,450 1440,445" stroke="url(#waveGrad1)" stroke-width="1.5" fill="none"/>
+      <path d="M0,470 C180,450 360,490 540,465 C720,440 900,480 1080,460 C1260,440 1380,465 1440,460" stroke="url(#waveGrad1)" stroke-width="1" fill="none" opacity="0.5"/>
+      <path d="M0,430 C240,410 480,460 720,435 C960,410 1200,445 1440,430" stroke="url(#waveGrad2)" stroke-width="1.5" fill="none"/>
+      <path d="M0,490 C200,470 380,510 560,488 C740,466 920,500 1100,480 C1280,460 1380,490 1440,485" stroke="url(#waveGrad1)" stroke-width="0.8" fill="none" opacity="0.4"/>
+    </svg>
+  </div>
+
+  <div class="hero-content">
+    <!-- Left -->
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot"></span>
+        Spectral · Spatial · AI Framework
+      </div>
+      <h1 class="hero-title">
+        Unified<br>
+        <span class="gradient-text">Hyperspectral</span><br>
+        Medical Analysis
+      </h1>
+      <p class="hero-subtitle">
+        A spectral–spatial AI framework for medical image analysis. 
+        Powered by multi-classifier ensemble learning with Random Forest 
+        and SVM fusion for clinical-grade tissue characterisation.
+      </p>
+      <div class="hero-cta-row">
+        <a href="perfusion.html" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="5"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          Perfusion Analysis
+        </a>
+        <a href="tumor.html" class="btn btn-outline">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><path d="M12 6v6l4 2"/></svg>
+          Tumor Detection
+        </a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-val">16</span>
+          <span class="hero-stat-lbl">Spectral Bands</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">2</span>
+          <span class="hero-stat-lbl">Clinical Tasks</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">RF+SVM</span>
+          <span class="hero-stat-lbl">Ensemble Model</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-val">32²</span>
+          <span class="hero-stat-lbl">Patch Size</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right — Visual cards -->
+    <div class="hero-right">
+      <div class="hero-vis-card vis-spectral-card">
+        <div class="vis-card-header">
+          <div class="vis-card-dot" style="background:var(--cyan)"></div>
+          <span class="vis-card-title">Spectral Signature — Band Response</span>
+          <span class="vis-card-badge">16 BANDS</span>
+        </div>
+        <div class="hero-vis-wrap">
+          <div class="spectral-scan"></div>
+          <div class="spectral-bars" style="padding-top:6px">
+            <div class="spectral-bar sb-1"></div>
+            <div class="spectral-bar sb-2"></div>
+            <div class="spectral-bar sb-3"></div>
+            <div class="spectral-bar sb-4"></div>
+            <div class="spectral-bar sb-5"></div>
+            <div class="spectral-bar sb-6"></div>
+            <div class="spectral-bar sb-7"></div>
+            <div class="spectral-bar sb-8"></div>
+            <div class="spectral-bar sb-9"></div>
+            <div class="spectral-bar sb-10"></div>
+            <div class="spectral-bar sb-11"></div>
+            <div class="spectral-bar sb-12"></div>
+            <div class="spectral-bar sb-13"></div>
+            <div class="spectral-bar sb-14"></div>
+            <div class="spectral-bar sb-15"></div>
+            <div class="spectral-bar sb-16"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-vis-card vis-pipeline-card">
+        <div class="vis-card-header">
+          <div class="vis-card-dot" style="background:var(--green)"></div>
+          <span class="vis-card-title">ML Pipeline</span>
+        </div>
+        <div class="pipeline-steps">
+          <div class="p-step"><div class="p-step-num">1</div> Ingest</div>
+          <div class="p-arrow">→</div>
+          <div class="p-step"><div class="p-step-num">2</div> Preprocess</div>
+          <div class="p-arrow">→</div>
+          <div class="p-step"><div class="p-step-num">3</div> Patch 32²</div>
+          <div class="p-arrow">→</div>
+          <div class="p-step"><div class="p-step-num">4</div> Features</div>
+          <div class="p-arrow">→</div>
+          <div class="p-step"><div class="p-step-num">5</div> PCA</div>
+          <div class="p-arrow">→</div>
+          <div class="p-step"><div class="p-step-num">6</div> Fusion</div>
+          <div class="p-arrow">→</div>
+          <div class="p-step"><div class="p-step-num">7</div> Output</div>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px">
+        <div class="hero-vis-card" style="padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Perfusion</div>
+          <div style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;color:#FB7185;margin-bottom:2px">3 Classes</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">Normal · Reduced · Abnormal</div>
+        </div>
+        <div class="hero-vis-card" style="padding:16px 20px">
+          <div style="font-family:var(--font-mono);font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Tumor</div>
+          <div style="font-family:var(--font-head);font-size:1.2rem;font-weight:700;color:#34D399;margin-bottom:2px">2 Classes</div>
+          <div style="font-size:0.72rem;color:var(--text-muted)">Non-Tumor · Glioblastoma</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-eyebrow">Core Capabilities</div>
+  <h2 class="section-title">Framework Architecture</h2>
+  <p class="section-subtitle">
+    An end-to-end hyperspectral imaging pipeline combining spectral and spatial deep features 
+    for robust medical tissue classification.
+  </p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon-box" style="background:rgba(56,189,248,0.08)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      </div>
+      <h3>Hyperspectral Imaging</h3>
+      <p>Processing 16-band hyperspectral cubes with radiometric correction using dark/white reference normalisation for clinical-grade accuracy.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">Dark/White Correction</span>
+        <span class="feature-tag">Patch 32×32</span>
+        <span class="feature-tag">PCA Reduction</span>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-box" style="background:rgba(52,211,153,0.08)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <h3>Spectral–Spatial Learning</h3>
+      <p>Dual-branch feature extraction combining spectral signatures with GLCM spatial texture features for comprehensive tissue characterisation.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">Spectral Features</span>
+        <span class="feature-tag">GLCM Texture</span>
+        <span class="feature-tag">Spectral Index</span>
+      </div>
+    </div>
+
+    <div class="feature-card">
+      <div class="feature-icon-box" style="background:rgba(129,140,248,0.08)">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#818CF8" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </div>
+      <h3>Fusion Classifiers</h3>
+      <p>Softmax probability fusion of Random Forest and SVM predictions for robust multi-class medical image classification with confidence scoring.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">Random Forest</span>
+        <span class="feature-tag">SVM</span>
+        <span class="feature-tag">Softmax Fusion</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS -->
+<section class="section" id="applications" style="padding-top:0">
+  <div class="section-eyebrow">Clinical Applications</div>
+  <h2 class="section-title">Our Applications</h2>
+  <p class="section-subtitle">
+    Two production-ready clinical modules for real-world hyperspectral medical image analysis.
+  </p>
+
+  <div class="apps-grid">
+    <!-- Perfusion Card -->
+    <div class="app-card perfusion-app-card">
+      <div class="app-card-bg">
+        <!-- Blood vessel / circulation SVG background -->
+        <svg width="100%" height="100%" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="opacity:0.18">
+          <defs>
+            <filter id="glow-perf">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Main vessels -->
+          <path d="M60,190 C90,160 130,200 160,180 C190,160 210,200 240,185 C270,170 290,200 320,185 C350,170 380,195 420,180 C460,165 500,185 540,175" stroke="#E11D48" stroke-width="3" fill="none" filter="url(#glow-perf)"/>
+          <path d="M60,210 C90,180 130,220 160,200 C190,180 210,220 240,205 C270,190 290,220 320,205 C350,190 380,215 420,200 C460,185 500,205 540,195" stroke="#FB7185" stroke-width="2" fill="none" filter="url(#glow-perf)"/>
+          <!-- Branch vessels -->
+          <path d="M160,180 C160,160 175,140 180,120 C185,100 175,80 180,60" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M240,185 C235,160 240,135 235,110" stroke="#FB7185" stroke-width="1.5" fill="none" opacity="0.6"/>
+          <path d="M320,185 C320,165 330,145 328,120 C326,95 330,70 325,45" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M420,180 C415,155 422,130 420,105" stroke="#FB7185" stroke-width="1.5" fill="none" opacity="0.6"/>
+          <!-- Lower branches -->
+          <path d="M160,200 C155,225 160,250 158,275" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.6"/>
+          <path d="M320,205 C315,230 320,255 318,280 C316,305 320,325 315,350" stroke="#FB7185" stroke-width="1.5" fill="none" opacity="0.7"/>
+          <path d="M420,200 C418,225 422,250 420,275" stroke="#E11D48" stroke-width="1.5" fill="none" opacity="0.6"/>
+          <!-- Small capillaries -->
+          <path d="M180,120 C185,115 195,118 200,112 C205,106 215,110 220,104" stroke="#FDA4AF" stroke-width="1" fill="none" opacity="0.5"/>
+          <path d="M235,110 C240,105 248,108 252,103" stroke="#FDA4AF" stroke-width="1" fill="none" opacity="0.4"/>
+          <!-- Blood flow circles -->
+          <circle cx="160" cy="180" r="4" fill="#E11D48" opacity="0.6"/>
+          <circle cx="240" cy="185" r="3" fill="#FB7185" opacity="0.5"/>
+          <circle cx="320" cy="185" r="5" fill="#E11D48" opacity="0.6"/>
+          <circle cx="420" cy="180" r="3.5" fill="#FB7185" opacity="0.5"/>
+        </svg>
+      </div>
+      <div class="app-card-overlay" style="background: linear-gradient(to top, rgba(24,11,20,0.98) 0%, rgba(24,11,20,0.85) 40%, rgba(24,11,20,0.3) 70%, transparent 100%)"></div>
+      <div class="app-card-content">
+        <div class="app-card-badge">Dataset: SpectralPACA · 10 Subjects</div>
+        <h3>Tissue Perfusion<br>Detection</h3>
+        <p>Identifies blood flow and oxygenation patterns from 204,510 hyperspectral frames across normal, reduced, and abnormal perfusion states.</p>
+        <div class="app-card-classes">
+          <span class="cls-chip" style="background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);color:#34D399">✓ Normal</span>
+          <span class="cls-chip" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);color:#FBBF24">⚡ Reduced</span>
+          <span class="cls-chip" style="background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.3);color:#F87171">⚠ Abnormal</span>
+        </div>
+        <a href="perfusion.html" class="btn-app" style="color:#FB7185;border-color:rgba(251,113,133,0.35);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Analyse Perfusion <span class="btn-icon-arrow"></span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Tumor Card -->
+    <div class="app-card tumor-app-card">
+      <div class="app-card-bg">
+        <!-- Neural/cellular tissue SVG background -->
+        <svg width="100%" height="100%" viewBox="0 0 600 380" preserveAspectRatio="xMidYMid slice" aria-hidden="true" style="opacity:0.18">
+          <defs>
+            <filter id="glow-tumor">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Cell network -->
+          <circle cx="120" cy="120" r="28" stroke="#10B981" stroke-width="1.5" fill="none" opacity="0.6" filter="url(#glow-tumor)"/>
+          <circle cx="230" cy="90" r="22" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <circle cx="340" cy="130" r="32" stroke="#10B981" stroke-width="2" fill="none" opacity="0.7" filter="url(#glow-tumor)"/>
+          <circle cx="460" cy="100" r="26" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <circle cx="160" cy="240" r="24" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <circle cx="280" cy="260" r="30" stroke="#10B981" stroke-width="2" fill="none" opacity="0.6"/>
+          <circle cx="420" cy="250" r="22" stroke="#34D399" stroke-width="1.5" fill="none" opacity="0.5"/>
+          <circle cx="520" cy="220" r="18" stroke="#059669" stroke-width="1.5" fill="none" opacity="0.4"/>
+          <!-- Cell connections / axons -->
+          <line x1="148" y1="120" x2="208" y2="90" stroke="#34D399" stroke-width="1" opacity="0.4"/>
+          <line x1="252" y1="90" x2="308" y2="130" stroke="#10B981" stroke-width="1" opacity="0.4"/>
+          <line x1="372" y1="130" x2="434" y2="100" stroke="#34D399" stroke-width="1" opacity="0.4"/>
+          <line x1="340" y1="162" x2="280" y2="230" stroke="#10B981" stroke-width="1" opacity="0.4"/>
+          <line x1="160" y1="216" x2="252" y2="260" stroke="#34D399" stroke-width="1" opacity="0.4"/>
+          <line x1="310" y1="260" x2="398" y2="250" stroke="#10B981" stroke-width="1" opacity="0.4"/>
+          <line x1="460" y1="126" x2="420" y2="228" stroke="#34D399" stroke-width="1" opacity="0.4"/>
+          <line x1="442" y1="250" x2="502" y2="220" stroke="#059669" stroke-width="1" opacity="0.4"/>
+          <!-- Cell nuclei -->
+          <circle cx="120" cy="120" r="8" fill="#10B981" opacity="0.3"/>
+          <circle cx="340" cy="130" r="10" fill="#10B981" opacity="0.35" filter="url(#glow-tumor)"/>
+          <circle cx="280" cy="260" r="9" fill="#10B981" opacity="0.3"/>
+          <!-- Small lesion cluster -->
+          <circle cx="340" cy="130" r="18" stroke="#06B6D4" stroke-width="1" fill="none" opacity="0.3" stroke-dasharray="4 4"/>
+        </svg>
+      </div>
+      <div class="app-card-overlay" style="background: linear-gradient(to top, rgba(7,19,15,0.98) 0%, rgba(7,19,15,0.85) 40%, rgba(7,19,15,0.3) 70%, transparent 100%)"></div>
+      <div class="app-card-content">
+        <div class="app-card-badge">Dataset: HistologyHSI-GB · 13 Patients</div>
+        <h3>Glioblastoma Brain<br>Tumor Detection</h3>
+        <p>Detects tumor tissue in hyperspectral histology images. Distinguishes ROI_T (tumor) from ROI_NT (non-tumor) with spatial probability mapping.</p>
+        <div class="app-card-classes">
+          <span class="cls-chip" style="background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);color:#34D399">✓ Non-Tumor</span>
+          <span class="cls-chip" style="background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.3);color:#F87171">⚠ Glioblastoma</span>
+        </div>
+        <a href="tumor.html" class="btn-app" style="color:#34D399;border-color:rgba(52,211,153,0.35);">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Detect Tumor <span class="btn-icon-arrow"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PIPELINE -->
+<section style="padding: 80px 0; background: var(--bg-surface); border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle);" id="pipeline">
+  <div style="max-width:1200px; margin:0 auto; padding:0 40px">
+    <div class="section-eyebrow">Methodology</div>
+    <h2 class="section-title">ML Pipeline Overview</h2>
+    <p class="section-subtitle" style="margin-bottom:36px">
+      A seven-stage end-to-end pipeline from raw hyperspectral data to clinical prediction.
+    </p>
+    <div class="pipeline-flow">
+      <div class="pipe-step"><div class="pipe-step-num">1</div><div class="pipe-step-label">HSI Data Ingestion</div></div>
+      <div class="pipe-arrow-icon">→</div>
+      <div class="pipe-step"><div class="pipe-step-num">2</div><div class="pipe-step-label">Radiometric Preprocessing</div></div>
+      <div class="pipe-arrow-icon">→</div>
+      <div class="pipe-step"><div class="pipe-step-num">3</div><div class="pipe-step-label">Patch Extraction 32×32</div></div>
+      <div class="pipe-arrow-icon">→</div>
+      <div class="pipe-step"><div class="pipe-step-num">4</div><div class="pipe-step-label">Feature Extraction</div></div>
+      <div class="pipe-arrow-icon">→</div>
+      <div class="pipe-step"><div class="pipe-step-num">5</div><div class="pipe-step-label">PCA Reduction</div></div>
+      <div class="pipe-arrow-icon">→</div>
+      <div class="pipe-step"><div class="pipe-step-num">6</div><div class="pipe-step-label">RF + SVM Fusion</div></div>
+      <div class="pipe-arrow-icon">→</div>
+      <div class="pipe-step" style="background:var(--cyan-glow);border-color:var(--border-bright)">
+        <div class="pipe-step-num">7</div>
+        <div class="pipe-step-label" style="color:var(--cyan)">Clinical Prediction</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">HSI<span class="accent">MED</span> Framework</div>
+    <p>Unified Spectral–Spatial Multi-Classifier Framework for Hyperspectral Medical Image Analysis</p>
+    <p class="footer-tech">Python · FastAPI · scikit-learn · NumPy · Spectral Python</p>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
